@@ -47,13 +47,39 @@ void ff_rtp_send_amr(AVFormatContext *s1, const uint8_t *buff, int size)
         if (p != s->buf)
             memmove(p, s->buf, header_size);
 
-        ff_rtp_send_data(s1, p, s->buf_ptr - p, 1);
+        if (s->octet_aligned < 1) {
+            if(st->codecpar->codec_id == AV_CODEC_ID_AMR_WB) {
+                p[0] = 0xf4;
+                p[1] = 0x40;
+            } else {
+                p[0] = 0x73;
+                p[1] = 0xc0;
+            }
 
+            for (i = 2; i < s->buf_ptr - p; i++) {
+                j = p[i] & 0xfc;
+                p[i-1] |= j>>2;
+                p[i] = p[i]<<6;
+            }
+
+            ff_rtp_send_data(s1, p, s->buf_ptr - p - 1, 1);
+        } else {
+            ff_rtp_send_data(s1, p, s->buf_ptr - p, 1);
+        }
+        
         s->num_frames = 0;
     }
 
     if (!s->num_frames) {
-        s->buf[0]    = 0xf0;
+        if (s->octet_aligned < 1) {
+            if (st->codecpar->codec_id == AV_CODEC_ID_AMR_WB) {
+                s->buf[0] = 0xf4;
+            } else {
+                s->buf[0] = 0x73;
+            }
+        } else {
+            s->buf[0] = 0xf0;
+        }
         s->buf_ptr   = s->buf + max_header_toc_size;
         s->timestamp = s->cur_timestamp;
     } else {

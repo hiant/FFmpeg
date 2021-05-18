@@ -61,6 +61,7 @@ struct RTPMuxContext {
     int flags;
 
     unsigned int frame_count;
+    int octet_aligned;
 };
 
 typedef struct RTPMuxContext RTPMuxContext;

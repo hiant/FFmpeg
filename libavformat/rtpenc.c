@@ -34,6 +34,7 @@ static const AVOption options[] = {
     { "ssrc", "Stream identifier", offsetof(RTPMuxContext, ssrc), AV_OPT_TYPE_INT, { .i64 = 0 }, INT_MIN, INT_MAX, AV_OPT_FLAG_ENCODING_PARAM },
     { "cname", "CNAME to include in RTCP SR packets", offsetof(RTPMuxContext, cname), AV_OPT_TYPE_STRING, { .str = NULL }, 0, 0, AV_OPT_FLAG_ENCODING_PARAM },
     { "seq", "Starting sequence number", offsetof(RTPMuxContext, seq), AV_OPT_TYPE_INT, { .i64 = -1 }, -1, 65535, AV_OPT_FLAG_ENCODING_PARAM },
+    { "octet_aligned",   "octet-aligned", offsetof(RTPMuxContext, octet_aligned), AV_OPT_TYPE_BOOL, { .i64 = -1 }, -1, 1, AV_OPT_FLAG_ENCODING_PARAM },
     { NULL },
 };
 
