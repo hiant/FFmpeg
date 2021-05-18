@@ -626,13 +626,14 @@ end:
 static int udp_open(URLContext *h, const char *uri, int flags)
 {
     char hostname[1024], localaddr[1024] = "";
-    int port, udp_fd = -1, tmp, bind_ret = -1, dscp = -1;
+    int port, udp_fd = -1, tmp, bind_ret = -1, dscp = -1, reuse = 1;
     UDPContext *s = h->priv_data;
     int is_output;
     const char *p;
     char buf[256];
     struct sockaddr_storage my_addr;
     socklen_t len;
+    struct linger so_linger;
     int ret;
 
     h->is_streamed = 1;
@@ -762,12 +763,23 @@ static int udp_open(URLContext *h, const char *uri, int flags)
     /* Follow the requested reuse option, unless it's multicast in which
      * case enable reuse unless explicitly disabled.
      */
+    s->reuse_socket = 1;
     if (s->reuse_socket > 0 || (s->is_multicast && s->reuse_socket < 0)) {
         s->reuse_socket = 1;
         if (setsockopt (udp_fd, SOL_SOCKET, SO_REUSEADDR, &(s->reuse_socket), sizeof(s->reuse_socket)) != 0) {
             ret = ff_neterrno();
             goto fail;
         }
+    }
+
+    if (setsockopt(udp_fd, SOL_SOCKET, SO_REUSEPORT, &reuse, sizeof(reuse))) {
+        av_log(NULL, AV_LOG_WARNING, "setsockopt(SO_REUSEPORT) failed\n");
+    }
+
+    so_linger.l_onoff = 1;
+    so_linger.l_linger = 0;
+    if (setsockopt(udp_fd, SOL_SOCKET, SO_LINGER, &so_linger, sizeof(so_linger))) {
+        av_log(NULL, AV_LOG_WARNING, "setsockopt(SO_LINGER) failed\n");
     }
 
     if (s->is_broadcast) {
