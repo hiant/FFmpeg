@@ -218,6 +218,8 @@ int av_reallocp_array(void *ptr, size_t nmemb, size_t size)
 
 void av_free(void *ptr)
 {
+    if (!ptr)
+        return;
 #if HAVE_ALIGNED_MALLOC
     _aligned_free(ptr);
 #else
@@ -229,6 +231,8 @@ void av_freep(void *arg)
 {
     void *val;
 
+    if (!arg)
+        return;
     memcpy(&val, arg, sizeof(val));
     memcpy(arg, &(void *){ NULL }, sizeof(val));
     av_free(val);

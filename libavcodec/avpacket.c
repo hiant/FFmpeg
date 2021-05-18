@@ -633,6 +633,8 @@ FF_ENABLE_DEPRECATION_WARNINGS
 
 void av_packet_unref(AVPacket *pkt)
 {
+    if (!pkt)
+        return;
     av_packet_free_side_data(pkt);
     av_buffer_unref(&pkt->buf);
     get_packet_defaults(pkt);
